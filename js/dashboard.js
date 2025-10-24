@@ -180,8 +180,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         document.getElementById('add-task-btn')?.addEventListener('click', showModalForAdd);
-        // document.getElementById('save-task-btn')?.addEventListener('click', handleFormSave);
+        // CORRECTED: Added back the event listener for the save button
+        document.getElementById('save-task-btn')?.addEventListener('click', handleFormSave);
         document.getElementById('export-excel-btn')?.addEventListener('click', handleExportToExcel);
+        
         document.getElementById('overview-table-body')?.addEventListener('click', (e) => {
             const target = e.target.closest('button');
             if (!target) return;
@@ -192,9 +194,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleExportToExcel() { /* ... unchanged ... */ }
+    
     function showModalForAdd() { /* ... unchanged ... */ }
+
     function showModalForEdit(index) { /* ... unchanged ... */ }
+
     function handleFormSave() { /* ... unchanged ... */ }
+
     function handleDelete(index) { /* ... unchanged ... */ }
 
     initialize();
