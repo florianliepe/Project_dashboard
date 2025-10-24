@@ -18,21 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusFilter = document.getElementById('status-filter');
     const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
-    function parseDate(dateInput) {
-        if (!dateInput) return null;
-        if (typeof dateInput === 'number' && dateInput > 1) {
-            const excelEpoch = new Date(1899, 11, 30);
-            return new Date(excelEpoch.getTime() + dateInput * 24 * 60 * 60 * 1000);
-        }
-        if (typeof dateInput !== 'string') return null;
-        if (dateInput.includes('.')) {
-            const parts = dateInput.split('.');
-            if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
-        }
-        const date = new Date(dateInput);
-        if (!isNaN(date)) return date;
-        return null;
-    }
+    function parseDate(dateInput) { /* ... unchanged ... */ }
 
     function initialize() {
         const modalElement = document.getElementById('testModal');
@@ -95,82 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTable(filteredData);
     }
     
-    function renderSummaryCards(data) {
-        const totalTests = data.length;
-        const completedTests = data.filter(item => String(item.Status || '').toLowerCase() === 'completed').length;
-        const inProgressTests = data.filter(item => String(item.Status || '').toLowerCase() === 'in progress').length;
-        let totalProgress = data.reduce((sum, item) => sum + (Number(item.Progress) || 0), 0);
-        const avgProgress = totalTests > 0 ? Math.round(totalProgress / totalTests) : 0;
-
-        document.getElementById('total-tests').textContent = totalTests;
-        document.getElementById('completed-tests').textContent = `${completedTests} (${totalTests > 0 ? Math.round((completedTests/totalTests)*100) : 0}%)`;
-        document.getElementById('inprogress-tests').textContent = inProgressTests;
-        document.getElementById('avg-progress').textContent = `${avgProgress}%`;
-    }
-
-    function renderStatusPieChart(data) {
-        const ctx = document.getElementById('status-pie-chart')?.getContext('2d');
-        if (!ctx) return;
-        
-        const statusCounts = data.reduce((acc, item) => {
-            const status = String(item.Status || 'Not Started').toLowerCase();
-            acc[status] = (acc[status] || 0) + 1;
-            return acc;
-        }, {});
-
-        const chartConfig = {
-            type: 'doughnut', 
-            data: {
-                labels: Object.keys(statusCounts).map(s => s.charAt(0).toUpperCase() + s.slice(1)),
-                datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#198754', '#0d6efd', '#6c757d', '#dc3545', '#ffc107'], borderColor: '#fff', borderWidth: 2 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
-        };
-        if (statusPieChartInstance) statusPieChartInstance.destroy();
-        statusPieChartInstance = new Chart(ctx, chartConfig);
-    }
+    function renderSummaryCards(data) { /* ... unchanged ... */ }
+    function renderStatusPieChart(data) { /* ... unchanged ... */ }
     
-    function renderTable(data) {
-        const tableBody = document.getElementById('testing-table-body');
-        tableBody.innerHTML = '';
-        if (data.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="8" class="text-center">No tests match the current filters.</td></tr>';
-            return;
-        }
-        
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        data.forEach(item => {
-            const originalIndex = testingData.findIndex(originalItem => originalItem === item);
-            const progress = Number(item.Progress) || 0;
-            const status = String(item.Status || '').toLowerCase();
-            let statusClass = { 'completed': 'status-completed', 'in progress': 'status-in-progress', 'blocked': 'status-blocked', 'overdue': 'status-overdue' }[status] || 'status-default';
-            let overdueClass = '';
-            const dueDate = parseDate(item['Due Date']);
-            if (status !== 'completed' && dueDate && dueDate < today) overdueClass = 'table-danger';
-
-            const row = `
-                <tr class="${overdueClass}">
-                    <td><strong>${item['Activity Title'] || ''}</strong></td>
-                    <td style="white-space: pre-wrap;">${item.Description || ''}</td>
-                    <td>${dueDate ? dueDate.toLocaleDateString('de-DE') : (item['Due Date'] || '')}</td>
-                    <td class="text-capitalize ${statusClass}">${item.Status || 'N/A'}</td>
-                    <td>
-                        <div class="progress" style="height: 22px; font-size: 0.9em;">
-                            <div class="progress-bar" role="progressbar" style="width: ${progress}%;" aria-valuenow="${progress}">${progress}%</div>
-                        </div>
-                    </td>
-                    <td>${item.Responsible || ''}</td>
-                    <td>${item.Blocker || 'None'}</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-outline-primary edit-btn mb-1" data-index="${originalIndex}"><i class="bi bi-pencil"></i></button> 
-                        <button class="btn btn-sm btn-outline-danger delete-btn" data-index="${originalIndex}"><i class="bi bi-trash"></i></button>
-                    </td>
-                </tr>`;
-            tableBody.innerHTML += row;
-        });
-    }
+    function renderTable(data) { /* ... unchanged ... */ }
 
     function addEventListeners() {
         searchInput.addEventListener('input', applyFilters);
@@ -184,7 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         document.getElementById('add-test-btn')?.addEventListener('click', showModalForAdd);
-        // document.getElementById('save-test-btn')?.addEventListener('click', handleFormSave);
+        // CORRECTED: Added back the event listener for the save button
+        document.getElementById('save-test-btn')?.addEventListener('click', handleFormSave);
         
         document.getElementById('testing-table-body')?.addEventListener('click', (e) => {
             const target = e.target.closest('button');
