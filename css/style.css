@@ -1,0 +1,121 @@
+/* Global Styles */
+body {
+    background-color: #f8f9fa;
+    padding-top: 56px; /* Adjust for fixed navbar */
+}
+
+.container {
+    max-width: 1400px;
+}
+
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: none;
+}
+
+.navbar-brand {
+    font-weight: 500;
+}
+
+.navbar-brand i {
+    position: relative;
+    top: -1px;
+}
+
+h1 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Project Selection Page (index.html) */
+.project-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.project-card .card-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--bs-primary);
+}
+
+.project-card .card-footer {
+    background-color: #f8f9fa;
+}
+
+.form-text {
+    font-size: 0.8rem;
+}
+
+/* NEW: RAG Status Styles */
+.rag-status-indicator {
+    height: 15px;
+    width: 15px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.rag-green { background-color: #198754; }
+.rag-amber { background-color: #ffc107; }
+.rag-red { background-color: #dc3545; }
+
+.btn-rag {
+    width: 35px;
+    font-weight: bold;
+    color: #6c757d;
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+}
+.btn-rag.active {
+    color: #fff;
+}
+.btn-rag[data-status="G"].active { background-color: #198754; border-color: #198754; }
+.btn-rag[data-status="A"].active { background-color: #ffc107; border-color: #ffc107; }
+.btn-rag[data-status="R"].active { background-color: #dc3545; border-color: #dc3545; }
+
+
+/* Modal Status Messages */
+#modal-status-message .alert {
+    padding: 0.5rem 1rem;
+    margin-bottom: 0;
+}
+
+/* Environment Checklist Page */
+.environment-table th:first-child, .environment-table td:first-child {
+    position: sticky;
+    left: 0;
+    background-color: #f8f9fa;
+    z-index: 2;
+}
+.environment-table thead th {
+    z-index: 3;
+    background-color: #e9ecef;
+}
+
+/* Progress Bar Text */
+.progress-bar {
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    font-weight: 500;
+}
+
+.progress-bar.bg-warning {
+    color: #212529 !important;
+    text-shadow: none;
+}
+
+/* Styles for Testing Page Visuals */
+.status-completed { color: #198754; font-weight: 500; }
+.status-in-progress { color: #0d6efd; font-weight: 500; }
+.status-blocked, .status-overdue { color: #dc3545; font-weight: 500; }
+.status-default { color: #6c757d; font-weight: 500; }
+
+.table th {
+    font-weight: 600;
+}

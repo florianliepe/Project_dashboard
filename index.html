@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration Dashboard - Project Selector</title>
+    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%230D6EFD' d='M9.2D3 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.146a.5.5 0 1 1-.708.708L5.5 9.707V12.5a.5.5 0 0 1-1 0V9.707L4.354 9.854a.5.5 0 1 1-.708-.708l1.5-1.5a.5.5 0 0 1 .708 0zM8.5 12a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5'/%3e%3c/svg%3e">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-folder-symlink"></i>
+                Migration Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-collection-fill"></i> Your Projects</h1>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProjectModal">
+                <i class="bi bi-plus-circle"></i> Add New Project
+            </button>
+        </div>
+
+        <!-- This is where the project cards will be displayed -->
+        <div id="project-list-container" class="row"></div>
+
+        <!-- A single hidden file input for the update functionality -->
+        <input type="file" id="update-file-input" class="d-none" accept=".xlsx, .xls">
+
+        <!-- Global status message area for updates -->
+        <div id="global-status-message" class="mt-3"></div>
+    </div>
+
+    <!-- Add Project Modal -->
+    <div class="modal fade" id="addProjectModal" tabindex="-1" aria-labelledby="addProjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProjectModalLabel">Add New Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-project-form">
+                        <div class="mb-3">
+                            <label for="project-name" class="form-label">Project Name</label>
+                            <input type="text" class="form-control" id="project-name" required placeholder="e.g., ELS Migration Wave 1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="project-file" class="form-label">Project Excel File</label>
+                            <input type="file" class="form-control" id="project-file" accept=".xlsx, .xls" required>
+                            <div class="form-text">
+                                The Excel file must contain sheets named: `Overview`, `Environment Checklist`, `Testing`, and `Blockers`.
+                            </div>
+                        </div>
+                         <div id="modal-status-message" class="mt-3"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="save-project-btn">Create Project</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/projects.js"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%230D6EFD' d='M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.146a.5.5 0 1 1-.708.708L5.5 9.707V12.5a.5.5 0 0 1-1 0V9.707L4.354 9.854a.5.5 0 1 1-.708-.708l1.5-1.5a.5.5 0 0 1 .708 0zM8.5 12a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5'/%3e%3c/svg%3e">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html"><i class="bi bi-box-seam"></i> Project Dashboard</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html"><i class="bi bi-collection"></i> All Projects</a></li>
+                    <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="bi bi-bar-chart-fill"></i> Overview</a></li>
+                    <li class="nav-item"><a class="nav-link" href="environment.html"><i class="bi bi-hdd-stack-fill"></i> Environment</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="testing.html"><i class="bi bi-clipboard2-check-fill"></i> Testing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="blockers.html"><i class="bi bi-cone-striped"></i> Blockers</a></li>
+                </ul>
+            </div>
+        </nav>
+
+    <div class="container mt-5 pt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 id="project-title-main">Testing</h1>
+            <button id="add-test-btn" class="btn btn-success"><i class="bi bi-plus-circle"></i> Add New Test</button>
+        </div>
+
+        <div class="row mb-4" id="summary-cards">
+            <div class="col-lg-3 col-md-6 mb-3"><div class="card"><div class="card-body"><h5 class="card-title">Total Tests</h5><h4 id="total-tests">0</h4></div></div></div>
+            <div class="col-lg-3 col-md-6 mb-3"><div class="card"><div class="card-body"><h5 class="card-title">Completed</h5><h4 id="completed-tests">0</h4></div></div></div>
+            <div class="col-lg-3 col-md-6 mb-3"><div class="card"><div class="card-body"><h5 class="card-title">In Progress</h5><h4 id="inprogress-tests">0</h4></div></div></div>
+            <div class="col-lg-3 col-md-6 mb-3"><div class="card"><div class="card-body"><h5 class="card-title">Avg. Progress</h5><h4 id="avg-progress">0%</h4></div></div></div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">Test Status Distribution</div>
+            <div class="card-body" style="height: 350px;">
+                <canvas id="status-pie-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-4"><input type="text" id="search-input" class="form-control" placeholder="Search by Activity Title..."></div>
+                    <div class="col-md-3"><select id="responsible-filter" class="form-select"></select></div>
+                    <div class="col-md-3"><select id="status-filter" class="form-select"></select></div>
+                    <div class="col-md-2"><button id="reset-filters-btn" class="btn btn-outline-secondary w-100">Reset</button></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Test Details</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Activity Title</th><th>Description</th><th>Due Date</th><th>Status</th><th>Progress</th><th>Responsible</th><th>Blocker</th><th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="testing-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="testModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="testModalLabel">Add/Edit Test</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="test-form"><input type="hidden" id="modal-test-index"><div class="mb-3"><label for="modal-activity-title" class="form-label">Activity Title</label><input type="text" class="form-control" id="modal-activity-title" required></div><div class="mb-3"><label for="modal-description" class="form-label">Description</label><textarea class="form-control" id="modal-description" rows="3"></textarea></div><div class="row"><div class="col-md-6 mb-3"><label for="modal-due-date" class="form-label">Due Date</label><input type="text" class="form-control" id="modal-due-date" placeholder="DD.MM.YYYY or Excel Date Number"></div><div class="col-md-6 mb-3"><label for="modal-status" class="form-label">Status</label><select class="form-select" id="modal-status"><option value="not started">Not Started</option><option value="in progress">In Progress</option><option value="completed">Completed</option><option value="overdue">Overdue</option><option value="blocked">Blocked</option></select></div></div><div class="row"><div class="col-md-6 mb-3"><label for="modal-progress" class="form-label">Progress (%)</label><input type="number" class="form-control" id="modal-progress" min="0" max="100" value="0"></div><div class="col-md-6 mb-3"><label for="modal-responsible" class="form-label">Responsible</label><input type="text" class="form-control" id="modal-responsible"></div></div><div class="mb-3"><label for="modal-blocker" class="form-label">Blocker</label><input type="text" class="form-control" id="modal-blocker"></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="button" class="btn btn-primary" id="save-test-btn">Save changes</button></div></div></div></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/testing.js"></script>
+</body>
+</html>
