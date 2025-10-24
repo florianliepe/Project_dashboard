@@ -183,4 +183,39 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('modal-responsible').value = item.Responsible || '';
         document.getElementById('modal-start-date').value = item['Start Date'] || '';
         document.getElementById('modal-priority').value = String(item.Priority || 'low').toLowerCase();
-        document.getElementById('modal-status').value = Strin
+        document.getElementById('modal-status').value = String(item['Solution Status'] || 'open').toLowerCase().replace(' ', '_');
+
+        blockerModal.show();
+    }
+
+    function handleFormSave() {
+        const index = document.getElementById('modal-blocker-index').value;
+        const blockerData = {
+            'Blocker Name': document.getElementById('modal-blocker-name').value,
+            'Description': document.getElementById('modal-description').value,
+            'Responsible': document.getElementById('modal-responsible').value,
+            'Start Date': document.getElementById('modal-start-date').value,
+            'Priority': document.getElementById('modal-priority').value,
+            'Solution Status': document.getElementById('modal-status').value.replace('_', ' '),
+        };
+
+        if (index === '') {
+            allBlockers.push(blockerData);
+        } else {
+            allBlockers[parseInt(index)] = blockerData;
+        }
+
+        saveDataAndReRender();
+        blockerModal.hide();
+    }
+
+    function handleDelete(index) {
+        const item = allBlockers[index];
+        if (confirm(`Are you sure you want to delete the blocker "${item['Blocker Name']}"?`)) {
+            allBlockers.splice(index, 1);
+            saveDataAndReRender();
+        }
+    }
+    
+    initialize();
+});
