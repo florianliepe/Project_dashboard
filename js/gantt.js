@@ -48,10 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasks = overviewData.map((item, index) => {
         const endDate = parseDate(item['Target Date']);
         if (!endDate) {
-            return null; // Skip tasks without a valid end date
+            return null;
         }
 
-        // Create a start date 1 day before the end date to make the bar visible
         const startDate = new Date(endDate);
         startDate.setDate(endDate.getDate() - 1);
 
@@ -63,9 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
             start: formatDateForGantt(startDate),
             end: formatDateForGantt(endDate),
             progress: progress,
-            custom_class: 'bar-milestone' // Optional: for styling
+            custom_class: 'bar-milestone'
         };
-    }).filter(task => task !== null); // Filter out the skipped tasks
+    }).filter(task => task !== null);
 
     if (tasks.length === 0) {
         document.getElementById('gantt-chart-container').innerHTML = '<div class="alert alert-warning">No tasks with valid dates found in the Overview data to display in the Gantt chart.</div>';
@@ -81,13 +80,19 @@ document.addEventListener('DOMContentLoaded', () => {
             view_mode: 'Week',
             date_format: 'YYYY-MM-DD',
             custom_popup_html: function(task) {
+                // CORRECTED LOGIC: Check if taskData is found before using it
                 const taskData = overviewData.find(item => item.Activity === task.name);
-                return `
-                    <div class="gantt-popup-content p-2">
-                        <strong>${task.name}</strong><br>
-                        <small>Target Date: ${taskData['Target Date'] || 'N/A'}</small><br>
-                        <small>Responsible: ${taskData.Responsible || 'N/A'}</small>
-                    </div>`;
+                if (taskData) {
+                    return `
+                        <div class="gantt-popup-content p-2" style="min-width: 200px;">
+                            <strong>${task.name}</strong><br>
+                            <small>Target Date: ${taskData['Target Date'] || 'N/A'}</small><br>
+                            <small>Responsible: ${taskData.Responsible || 'N/A'}</small>
+                        </div>`;
+                } else {
+                    // Fallback popup if no matching data is found
+                    return `<div class="gantt-popup-content p-2"><strong>${task.name}</strong><br><small>No additional details found.</small></div>`;
+                }
             }
         });
     } catch (e) {
