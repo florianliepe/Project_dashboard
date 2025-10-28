@@ -44,28 +44,28 @@
                 </div>
             </div>
             <div class="card-body">
-                <div class="mb-3">
-                    <label for="summary-accomplishments" class="form-label fw-bold">Key Accomplishments</label>
-                    <textarea class="form-control summary-textarea" id="summary-accomplishments" rows="3" readonly placeholder="No accomplishments noted..."></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="summary-risks" class="form-label fw-bold">Key Risks & Issues</label>
-                    <textarea class="form-control summary-textarea" id="summary-risks" rows="3" readonly placeholder="No risks noted..."></textarea>
-                </div>
-                <div>
-                    <label for="summary-next-steps" class="form-label fw-bold">Next Steps</label>
-                    <textarea class="form-control summary-textarea" id="summary-next-steps" rows="3" readonly placeholder="No next steps noted..."></textarea>
-                </div>
+                <div class="mb-3"><label for="summary-accomplishments" class="form-label fw-bold">Key Accomplishments</label><textarea class="form-control summary-textarea" id="summary-accomplishments" rows="3" readonly placeholder="No accomplishments noted..."></textarea></div>
+                <div class="mb-3"><label for="summary-risks" class="form-label fw-bold">Key Risks & Issues</label><textarea class="form-control summary-textarea" id="summary-risks" rows="3" readonly placeholder="No risks noted..."></textarea></div>
+                <div><label for="summary-next-steps" class="form-label fw-bold">Next Steps</label><textarea class="form-control summary-textarea" id="summary-next-steps" rows="3" readonly placeholder="No next steps noted..."></textarea></div>
             </div>
         </div>
+
+        <!-- MODIFIED: Chart Section Layout -->
         <div class="row mb-4">
-            <div class="col-lg-12">
-                <div class="card">
+            <div class="col-lg-7">
+                <div class="card h-100">
+                    <div class="card-header">Completions Over Time</div>
+                    <div class="card-body"><canvas id="completions-chart"></canvas></div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card h-100">
                     <div class="card-header">Status Distribution</div>
-                    <div class="card-body" style="height: 350px;"><canvas id="status-chart"></canvas></div>
+                    <div class="card-body"><canvas id="status-chart"></canvas></div>
                 </div>
             </div>
         </div>
+        
         <div class="card mb-4">
             <div class="card-body">
                 <div class="row g-3 align-items-center">
@@ -77,33 +77,8 @@
             </div>
         </div>
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>Overview Details</span>
-                <div>
-                    <button class="btn btn-success btn-sm me-2" id="export-excel-btn"><i class="bi bi-file-earmark-excel"></i> Export Project</button>
-                    <button class="btn btn-primary btn-sm" id="add-task-btn"><i class="bi bi-plus-circle"></i> Add Task</button>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th data-column-key="Phase" style="cursor: pointer;">Phase &#8645;</th>
-                                <th data-column-key="Topics" style="cursor: pointer;">Topics &#8645;</th>
-                                <th data-column-key="Activity" style="cursor: pointer;">Activity &#8645;</th>
-                                <th>Details</th>
-                                <th data-column-key="Responsible" style="cursor: pointer;">Responsible &#8645;</th>
-                                <th data-column-key="Environment" style="cursor: pointer;">Environment &#8645;</th>
-                                <th data-column-key="Target Date" style="cursor: pointer;">Target Date &#8645;</th>
-                                <th data-column-key="Status" style="cursor: pointer;">Status &#8645;</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="overview-table-body"></tbody>
-                    </table>
-                </div>
-            </div>
+            <div class="card-header d-flex justify-content-between align-items-center"><span>Overview Details</span><div><button class="btn btn-success btn-sm me-2" id="export-excel-btn"><i class="bi bi-file-earmark-excel"></i> Export Project</button><button class="btn btn-primary btn-sm" id="add-task-btn"><i class="bi bi-plus-circle"></i> Add Task</button></div></div>
+            <div class="card-body"><div class="table-responsive"><table class="table table-hover"><thead><tr><th data-column-key="Phase" style="cursor: pointer;">Phase &#8645;</th><th data-column-key="Topics" style="cursor: pointer;">Topics &#8645;</th><th data-column-key="Activity" style="cursor: pointer;">Activity &#8645;</th><th>Details</th><th data-column-key="Responsible" style="cursor: pointer;">Responsible &#8645;</th><th data-column-key="Environment" style="cursor: pointer;">Environment &#8645;</th><th data-column-key="Target Date" style="cursor: pointer;">Target Date &#8645;</th><th data-column-key="Status" style="cursor: pointer;">Status &#8645;</th><th>Actions</th></tr></thead><tbody id="overview-table-body"></tbody></table></div></div>
         </div>
     </div>
     <div class="modal fade" id="taskModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="taskModalLabel">Add/Edit Task</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="task-form"><input type="hidden" id="modal-task-index"><div class="row"><div class="col-md-6 mb-3"><label for="modal-phase" class="form-label">Phase</label><input type="text" class="form-control" id="modal-phase"></div><div class="col-md-6 mb-3"><label for="modal-topics" class="form-label">Topics</label><input type="text" class="form-control" id="modal-topics"></div></div><div class="mb-3"><label for="modal-activity" class="form-label">Activity</label><input type="text" class="form-control" id="modal-activity" required></div><div class="mb-3"><label for="modal-details" class="form-label">Details</label><textarea class="form-control" id="modal-details" rows="2"></textarea></div><div class="row"><div class="col-md-6 mb-3"><label for="modal-responsible" class="form-label">Responsible</label><input type="text" class="form-control" id="modal-responsible"></div><div class="col-md-6 mb-3"><label for="modal-environment" class="form-label">Environment</label><input type="text" class="form-control" id="modal-environment"></div></div><div class="row"><div class="col-md-6 mb-3"><label for="modal-target-date" class="form-label">Target Date</label><input type="text" class="form-control" id="modal-target-date" placeholder="DD.MM.YYYY"></div><div class="col-md-6 mb-3"><label for="modal-status" class="form-label">Status</label><input type="text" class="form-control" id="modal-status"></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="button" class="btn btn-primary" id="save-task-btn">Save changes</button></div></div></div></div>
