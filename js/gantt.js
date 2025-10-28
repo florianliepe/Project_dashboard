@@ -8,8 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const PROJECT_DATA_PREFIX = 'migrationDashboard_';
-    document.querySelector('.navbar-brand').innerHTML = `<i class="bi bi-clipboard2-data-fill"></i> ${activeProject}`;
-    document.getElementById('project-title').textContent = `${activeProject} - Gantt View`;
+    
+    // Ensure these elements exist before trying to modify them
+    const navbarBrand = document.querySelector('.navbar-brand');
+    const projectTitle = document.getElementById('project-title');
+    if (navbarBrand) {
+        navbarBrand.innerHTML = `<i class="bi bi-clipboard2-data-fill"></i> ${activeProject}`;
+    }
+    if (projectTitle) {
+        projectTitle.textContent = `${activeProject} - Gantt View`;
+    }
 
     function parseDate(dateInput) {
         if (!dateInput) return null;
@@ -37,8 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const rawData = localStorage.getItem(PROJECT_DATA_PREFIX + activeProject);
+    const ganttContainer = document.getElementById('gantt-chart-container');
+
     if (!rawData) {
-        document.getElementById('gantt-chart-container').innerHTML = '<div class="alert alert-danger">Project data not found.</div>';
+        ganttContainer.innerHTML = '<div class="alert alert-danger">Project data not found.</div>';
         return;
     }
     
@@ -48,9 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasks = overviewData.map((item, index) => {
         const endDate = parseDate(item['Target Date']);
         if (!endDate) {
-            return null;
+            return null; // Skip tasks without a valid end date
         }
 
+        // Create a start date 1 day before the end date to make the bar visible
         const startDate = new Date(endDate);
         startDate.setDate(endDate.getDate() - 1);
 
@@ -62,12 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
             start: formatDateForGantt(startDate),
             end: formatDateForGantt(endDate),
             progress: progress,
-            custom_class: 'bar-milestone'
+            custom_class: 'bar-milestone' // Optional: for styling
         };
     }).filter(task => task !== null);
 
     if (tasks.length === 0) {
-        document.getElementById('gantt-chart-container').innerHTML = '<div class="alert alert-warning">No tasks with valid dates found in the Overview data to display in the Gantt chart.</div>';
+        ganttContainer.innerHTML = '<div class="alert alert-warning">No tasks with valid dates found in the Overview data to display in the Gantt chart.</div>';
         return;
     }
     
@@ -80,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
             view_mode: 'Week',
             date_format: 'YYYY-MM-DD',
             custom_popup_html: function(task) {
-                // CORRECTED LOGIC: Check if taskData is found before using it
                 const taskData = overviewData.find(item => item.Activity === task.name);
                 if (taskData) {
                     return `
@@ -90,13 +100,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             <small>Responsible: ${taskData.Responsible || 'N/A'}</small>
                         </div>`;
                 } else {
-                    // Fallback popup if no matching data is found
                     return `<div class="gantt-popup-content p-2"><strong>${task.name}</strong><br><small>No additional details found.</small></div>`;
                 }
             }
         });
     } catch (e) {
         console.error("Gantt chart rendering failed:", e);
-        document.getElementById('gantt-chart-container').innerHTML = '<div class="alert alert-danger">An error occurred while rendering the Gantt chart.</div>';
+        ganttContainer.innerHTML = '<div class="alert alert-danger">An error occurred while rendering the Gantt chart.</div>';
     }
 });
