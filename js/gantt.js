@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ganttContainer = document.getElementById('gantt-chart-container');
 
     if (!rawData) {
-        ganttContainer.innerHTML = '<div class="alert alert-danger">Project data not found.</div>';
+        if (ganttContainer) ganttContainer.innerHTML = '<div class="alert alert-danger">Project data not found.</div>';
         return;
     }
     
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }).filter(task => task !== null);
 
     if (tasks.length === 0) {
-        ganttContainer.innerHTML = '<div class="alert alert-warning">No tasks with valid dates found in the Overview data to display in the Gantt chart.</div>';
+        if (ganttContainer) ganttContainer.innerHTML = '<div class="alert alert-warning">No tasks with valid dates found in the Overview data to display in the Gantt chart.</div>';
         return;
     }
     
@@ -104,6 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } catch (e) {
         console.error("Gantt chart rendering failed:", e);
-        ganttContainer.innerHTML = '<div class="alert alert-danger">An error occurred while rendering the Gantt chart.</div>';
+        if (ganttContainer) ganttContainer.innerHTML = '<div class="alert alert-danger">An error occurred while rendering the Gantt chart.</div>';
     }
 });
