@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const PROJECT_DATA_PREFIX = 'migrationDashboard_';
     
-    // Ensure these elements exist before trying to modify them
     const navbarBrand = document.querySelector('.navbar-brand');
     const projectTitle = document.getElementById('project-title');
     if (navbarBrand) {
@@ -58,10 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasks = overviewData.map((item, index) => {
         const endDate = parseDate(item['Target Date']);
         if (!endDate) {
-            return null; // Skip tasks without a valid end date
+            return null; 
         }
 
-        // Create a start date 1 day before the end date to make the bar visible
         const startDate = new Date(endDate);
         startDate.setDate(endDate.getDate() - 1);
 
@@ -73,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             start: formatDateForGantt(startDate),
             end: formatDateForGantt(endDate),
             progress: progress,
-            custom_class: 'bar-milestone' // Optional: for styling
+            custom_class: 'bar-milestone'
         };
     }).filter(task => task !== null);
 
