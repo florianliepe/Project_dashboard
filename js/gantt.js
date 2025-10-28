@@ -57,14 +57,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasks = overviewData.map((item, index) => {
         const targetDate = parseDate(item['Target Date']);
         if (!targetDate) {
-            return null; // Skip tasks without a valid date
+            return null;
         }
 
-        // --- CORRECTED LOGIC ---
-        // For a milestone or single-day event, the start and end dates should be the same.
-        // This is the robust way to handle it and prevents the infinite loop.
+        // --- THE DEFINITIVE FIX ---
+        // A task for a single day must start on that day and end on the next.
+        // This gives it a 1-day duration and avoids the zero-duration infinite loop.
         const startDate = targetDate;
-        const endDate = targetDate;
+        const endDate = new Date(targetDate);
+        endDate.setDate(targetDate.getDate() + 1);
 
         const progress = String(item.Status || '').toLowerCase().includes('deployed') || String(item.Status || '').toLowerCase().includes('completed') ? 100 : 0;
 
