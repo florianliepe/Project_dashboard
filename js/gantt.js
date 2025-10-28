@@ -55,15 +55,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const overviewData = projectData.overview || [];
 
     const tasks = overviewData.map((item, index) => {
-        const endDate = parseDate(item['Target Date']);
-        if (!endDate) {
-            return null; 
+        const targetDate = parseDate(item['Target Date']);
+        if (!targetDate) {
+            return null; // Skip tasks without a valid date
         }
 
-        const startDate = new Date(endDate);
-        startDate.setDate(endDate.getDate() - 1);
+        // --- CORRECTED LOGIC ---
+        // For a milestone or single-day event, the start and end dates should be the same.
+        // This is the robust way to handle it and prevents the infinite loop.
+        const startDate = targetDate;
+        const endDate = targetDate;
 
-        const progress = String(item.Status || '').toLowerCase().includes('deployed') ? 100 : 0;
+        const progress = String(item.Status || '').toLowerCase().includes('deployed') || String(item.Status || '').toLowerCase().includes('completed') ? 100 : 0;
 
         return {
             id: 'task_' + index,
@@ -71,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
             start: formatDateForGantt(startDate),
             end: formatDateForGantt(endDate),
             progress: progress,
-            custom_class: 'bar-milestone'
         };
     }).filter(task => task !== null);
 
