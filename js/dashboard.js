@@ -53,11 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function initialize() {
         const modalElement = document.getElementById('taskModal');
         if (modalElement) taskModal = new bootstrap.Modal(modalElement);
-        
         loadDataAndRender();
         addEventListeners();
         makeTableSortable();
-        
         document.querySelector('.navbar-brand').innerHTML = `<i class="bi bi-clipboard2-data-fill"></i> ${activeProject}`;
         document.getElementById('project-title').textContent = `${activeProject} - Overview`;
     }
@@ -65,10 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadDataAndRender() {
         const rawData = localStorage.getItem(PROJECT_DATA_PREFIX + activeProject);
         if (!rawData) { alert('Error: Could not find data for the selected project.'); return; }
-        
         projectData = JSON.parse(rawData);
         overviewData = projectData.overview || [];
-        
         populateFilters();
         populateExecutiveSummary();
         renderDashboard();
@@ -291,4 +287,26 @@ document.addEventListener('DOMContentLoaded', () => {
             'Environment': document.getElementById('modal-environment').value,
             'Target Date': document.getElementById('modal-target-date').value,
             'Status': document.getElementById('modal-status').value,
-            'Dependencie
+            'Dependencies': document.getElementById('modal-dependencies').value
+        };
+        if (index === '') {
+            overviewData.push(taskData);
+        } else {
+            overviewData[parseInt(index)] = taskData;
+        }
+        saveProjectData();
+        renderDashboard();
+        taskModal.hide();
+    }
+
+    function handleDelete(index) {
+        const item = overviewData[index];
+        if (confirm(`Are you sure you want to delete the task "${item.Activity}"?`)) {
+            overviewData.splice(index, 1);
+            saveProjectData();
+            renderDashboard();
+        }
+    }
+    
+    initialize();
+});
