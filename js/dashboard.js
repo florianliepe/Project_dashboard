@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         populateExecutiveSummary();
         renderDashboard();
     }
-
+    
     function saveProjectData() {
         projectData.overview = overviewData;
         projectData.executiveSummary = {
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveProjectData();
         toggleSummaryEditMode(false);
     }
-
+    
     function addEventListeners() {
         editSummaryBtn.addEventListener('click', () => toggleSummaryEditMode(true));
         cancelSummaryBtn.addEventListener('click', () => { populateExecutiveSummary(); toggleSummaryEditMode(false); });
@@ -200,117 +200,3 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         if (completionsChartInstance) completionsChartInstance.destroy();
         completionsChartInstance = new Chart(ctx, chartConfig);
-    }
-
-    function renderStatusChart(data) {
-        const ctx = document.getElementById('status-chart')?.getContext('2d');
-        if (!ctx) return;
-        const statusCounts = data.reduce((acc, item) => { const status = String(item.Status || 'N/A'); acc[status] = (acc[status] || 0) + 1; return acc; }, {});
-        const chartConfig = { type: 'doughnut', data: { labels: Object.keys(statusCounts), datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#28a745', '#007bff', '#ffc107', '#dc3545', '#6c757d', '#17a2b8'], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } } };
-        if (statusChartInstance) statusChartInstance.destroy();
-        statusChartInstance = new Chart(ctx, chartConfig);
-    }
-
-    function populateTable(data) {
-        const tableBody = document.getElementById('overview-table-body');
-        tableBody.innerHTML = '';
-        if (data.length === 0) { tableBody.innerHTML = '<tr><td colspan="9" class="text-center">No tasks match the current filters.</td></tr>'; return; }
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        data.forEach(item => {
-            const originalIndex = overviewData.findIndex(originalItem => originalItem === item);
-            let overdueClass = '';
-            const status = String(item.Status || '').toLowerCase();
-            const dueDate = parseDate(item['Target Date']);
-            if (status !== 'deployed' && status !== 'completed' && dueDate && dueDate < today) { overdueClass = 'table-danger'; }
-            const row = `<tr class="${overdueClass}"><td>${item.Phase || ''}</td><td>${item.Topics || ''}</td><td>${item.Activity || ''}</td><td>${item.Details || ''}</td><td>${item.Responsible || ''}</td><td>${item.Environment || ''}</td><td>${item['Target Date'] || ''}</td><td><span class="badge bg-secondary">${item.Status || 'N/A'}</span></td><td><button class="btn btn-sm btn-outline-primary edit-btn" data-index="${originalIndex}"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-outline-danger delete-btn" data-index="${originalIndex}"><i class="bi bi-trash"></i></button></td></tr>`;
-            tableBody.innerHTML += row;
-        });
-    }
-    
-    function handleExportToExcel() {
-        if (!projectData) { alert("There is no data to export."); return; }
-        const workbook = XLSX.utils.book_new();
-        Object.keys(projectData).forEach(key => {
-            if (key !== 'lastModified' && Array.isArray(projectData[key])) {
-                let sheetName = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                sheetName = sheetName.replace('checklist', ' Checklist').trim();
-                XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(projectData[key]), sheetName);
-            }
-        });
-        XLSX.writeFile(workbook, `${activeProject}_Export_${new Date().toISOString().slice(0, 10)}.xlsx`);
-    }
-
-    function populateDependenciesDropdown(selectedIndex = -1) {
-        const dependenciesSelect = document.getElementById('modal-dependencies');
-        dependenciesSelect.innerHTML = '<option value="">None</option>';
-        overviewData.forEach((task, index) => {
-            if (index === selectedIndex) return;
-            const option = document.createElement('option');
-            option.value = `task_${index}`;
-            option.textContent = task.Activity || `Task ${index + 1}`;
-            dependenciesSelect.appendChild(option);
-        });
-    }
-
-    function showModalForAdd() {
-        document.getElementById('task-form').reset();
-        document.getElementById('modal-task-index').value = '';
-        document.getElementById('taskModalLabel').textContent = 'Add New Task';
-        populateDependenciesDropdown();
-        taskModal.show();
-    }
-
-    function showModalForEdit(index) {
-        const item = overviewData[index];
-        if (!item) return;
-        document.getElementById('task-form').reset();
-        document.getElementById('modal-task-index').value = index;
-        document.getElementById('taskModalLabel').textContent = 'Edit Task';
-        populateDependenciesDropdown(parseInt(index));
-        document.getElementById('modal-phase').value = item.Phase || '';
-        document.getElementById('modal-topics').value = item.Topics || '';
-        document.getElementById('modal-activity').value = item.Activity || '';
-        document.getElementById('modal-details').value = item.Details || '';
-        document.getElementById('modal-responsible').value = item.Responsible || '';
-        document.getElementById('modal-environment').value = item.Environment || '';
-        document.getElementById('modal-target-date').value = item['Target Date'] || '';
-        document.getElementById('modal-status').value = item.Status || '';
-        document.getElementById('modal-dependencies').value = item.Dependencies || '';
-        taskModal.show();
-    }
-
-    function handleFormSave() {
-        const index = document.getElementById('modal-task-index').value;
-        const taskData = {
-            'Phase': document.getElementById('modal-phase').value,
-            'Topics': document.getElementById('modal-topics').value,
-            'Activity': document.getElementById('modal-activity').value,
-            'Details': document.getElementById('modal-details').value,
-            'Responsible': document.getElementById('modal-responsible').value,
-            'Environment': document.getElementById('modal-environment').value,
-            'Target Date': document.getElementById('modal-target-date').value,
-            'Status': document.getElementById('modal-status').value,
-            'Dependencies': document.getElementById('modal-dependencies').value
-        };
-        if (index === '') {
-            overviewData.push(taskData);
-        } else {
-            overviewData[parseInt(index)] = taskData;
-        }
-        saveProjectData();
-        renderDashboard();
-        taskModal.hide();
-    }
-
-    function handleDelete(index) {
-        const item = overviewData[index];
-        if (confirm(`Are you sure you want to delete the task "${item.Activity}"?`)) {
-            overviewData.splice(index, 1);
-            saveProjectData();
-            renderDashboard();
-        }
-    }
-    
-    initialize();
-});
