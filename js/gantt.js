@@ -51,7 +51,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
-    const projectData = JSON.parse(rawData);
+    let projectData;
+    try {
+        projectData = JSON.parse(rawData);
+    } catch (e) {
+        console.error("Failed to parse project data:", e);
+        if (ganttContainer) ganttContainer.innerHTML = '<div class="alert alert-danger"><strong>Error:</strong> Could not read project data. It may be corrupted. Please try clearing your site data or re-creating the project.</div>';
+        return;
+    }
+
     const overviewData = projectData.overview || [];
 
     const tasks = overviewData.map((item, index) => {
@@ -74,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
             progress: progress,
         };
     }).filter(task => {
-        // THE DEFINITIVE FIX: Stricter validation to ensure every task is valid before passing to the library.
         return task && task.start && task.end;
     });
 
@@ -83,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
-    // THE DEFINITIVE FIX: Defer the chart rendering to prevent the browser from freezing on load.
     setTimeout(() => {
         try {
             new Gantt("#gantt-chart", tasks, {
@@ -111,5 +117,5 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Gantt chart rendering failed:", e);
             if (ganttContainer) ganttContainer.innerHTML = '<div class="alert alert-danger">A critical error occurred while rendering the Gantt chart. Check the console for details.</div>';
         }
-    }, 0); // A timeout of 0ms is enough to defer execution
+    }, 0);
 });
