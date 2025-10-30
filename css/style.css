@@ -53,3 +53,12 @@ h1 { display: flex; align-items: center; gap: 0.75rem; }
     border: 1px solid #dee2e6;
     padding: .375rem .75rem;
 }
+/* --- NEW: Gantt Chart Dependency Arrow Styles --- */
+.gantt .arrow {
+    stroke: #6c757d; /* A darker gray for the arrow line */
+    stroke-width: 1.5;
+}
+
+.gantt .arrow-head {
+    fill: #6c757d; /* A matching darker gray for the arrowhead */
+}
