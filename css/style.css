@@ -48,12 +48,14 @@ h1 { display: flex; align-items: center; gap: 0.75rem; }
 /* Dependency Dropdown Text Fix */
 #modal-dependencies option { color: #000 !important; }
 
-/* --- NEW: FIX FOR MODAL LAYOUT --- */
-/* This ensures Bootstrap's grid system is not overridden by the Gantt CSS. */
-.modal-body .row {
-    display: flex;
-    flex-wrap: wrap;
-}
-.modal-body .col-md-6 {
-    width: 50%;
+/* Modal Layout Fix */
+.modal-body .row { display: flex; flex-wrap: wrap; }
+.modal-body .col-md-6 { width: 50%; }
+
+/* --- NEW: FIX FOR MODAL Z-INDEX --- */
+/* This rule forces the Bootstrap modal to have a very high z-index, ensuring it
+   and all its children (like dropdowns) render above any other content,
+   especially the Gantt chart's UI elements. */
+.modal {
+    z-index: 9999 !important;
 }
