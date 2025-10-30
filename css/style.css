@@ -36,29 +36,18 @@ h1 { display: flex; align-items: center; gap: 0.75rem; }
 .status-default { color: #6c757d; font-weight: 500; }
 .table th { font-weight: 600; }
 
-/* --- NEW: Executive Summary Styles --- */
-.summary-textarea {
-    border: none;
-    background-color: transparent;
-    resize: none;
-    padding: 0;
-    color: #212529;
-}
-.summary-textarea:focus {
-    box-shadow: none;
-    background-color: transparent;
-}
-.summary-textarea.editable {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    padding: .375rem .75rem;
-}
-/* --- NEW: Gantt Chart Dependency Arrow Styles --- */
-.gantt .arrow {
-    stroke: #6c757d; /* A darker gray for the arrow line */
-    stroke-width: 1.5;
-}
+/* Executive Summary Styles */
+.summary-textarea { border: none; background-color: transparent; resize: none; padding: 0; color: #212529; }
+.summary-textarea:focus { box-shadow: none; background-color: transparent; }
+.summary-textarea.editable { background-color: #f8f9fa; border: 1px solid #dee2e6; padding: .375rem .75rem; }
 
-.gantt .arrow-head {
-    fill: #6c757d; /* A matching darker gray for the arrowhead */
+/* Gantt Chart Dependency Arrow Styles */
+.gantt .arrow { stroke: #6c757d; stroke-width: 1.5; }
+.gantt .arrow-head { fill: #6c757d; }
+
+/* --- NEW: FIX FOR DEPENDENCY DROPDOWN TEXT --- */
+/* This rule specifically targets the options in the dependency dropdown */
+/* and ensures their text is always visible and black. */
+#modal-dependencies option {
+    color: #000 !important;
 }
