@@ -45,9 +45,15 @@ h1 { display: flex; align-items: center; gap: 0.75rem; }
 .gantt .arrow { stroke: #6c757d; stroke-width: 1.5; }
 .gantt .arrow-head { fill: #6c757d; }
 
-/* --- NEW: FIX FOR DEPENDENCY DROPDOWN TEXT --- */
-/* This rule specifically targets the options in the dependency dropdown */
-/* and ensures their text is always visible and black. */
-#modal-dependencies option {
-    color: #000 !important;
+/* Dependency Dropdown Text Fix */
+#modal-dependencies option { color: #000 !important; }
+
+/* --- NEW: FIX FOR MODAL LAYOUT --- */
+/* This ensures Bootstrap's grid system is not overridden by the Gantt CSS. */
+.modal-body .row {
+    display: flex;
+    flex-wrap: wrap;
+}
+.modal-body .col-md-6 {
+    width: 50%;
 }
