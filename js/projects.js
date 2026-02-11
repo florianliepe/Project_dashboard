@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const data = e.target.result;
                     const workbook = XLSX.read(data, { type: 'array' });
-                    // --- MODIFIED SECTION ---
                     const requiredSheets = ['Home', 'Testing', 'Blockers'];
                     let projectData = {};
                     if (!isNewProject) {
@@ -54,11 +53,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         projectData.ragStatus = 'G';
                     }
                     requiredSheets.forEach(sheetName => {
-                        if (!workbook.Sheets[sheetName]) throw new Error(`Required sheet "${sheetName}" not found.`);
-                        const key = sheetName.toLowerCase().replace(/\s+/g, '');
-                        projectData[key] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                        if (!workbook.Sheets[sheetName]) {
+                            // Find sheet by case-insensitive match
+                            const foundSheet = Object.keys(workbook.Sheets).find(s => s.toLowerCase() === sheetName.toLowerCase());
+                            if (foundSheet) {
+                                const key = sheetName.toLowerCase().replace(/\s+/g, '');
+                                projectData[key] = XLSX.utils.sheet_to_json(workbook.Sheets[foundSheet]);
+                            } else {
+                                throw new Error(`Required sheet "${sheetName}" not found.`);
+                            }
+                        } else {
+                            const key = sheetName.toLowerCase().replace(/\s+/g, '');
+                            projectData[key] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                        }
                     });
-                    // --- END MODIFIED SECTION ---
                     projectData.lastModified = new Date().toISOString();
                     localStorage.setItem(PROJECT_DATA_PREFIX + projectName, JSON.stringify(projectData));
                     resolve();
