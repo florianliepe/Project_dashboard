@@ -1,301 +1,115 @@
 document.addEventListener('DOMContentLoaded', () => {
     'use strict';
-
-    const activeProject = sessionStorage.getItem('activeProject');
-    if (!activeProject) { window.location.href = 'index.html'; return; }
-
-    let projectData = {};
-    let homeData = [];
-    let taskModal;
-    let statusChartInstance = null;
-    let completionsChartInstance = null;
+    const PROJECT_LIST_KEY = 'migrationDashboard_projects';
     const PROJECT_DATA_PREFIX = 'migrationDashboard_';
+    const projectListContainer = document.getElementById('project-list-container');
+    const saveProjectBtn = document.getElementById('save-project-btn');
+    const addProjectForm = document.getElementById('add-project-form');
+    const updateFileInput = document.getElementById('update-file-input');
+    const globalStatusMessage = document.getElementById('global-status-message');
+    const addProjectModal = new bootstrap.Modal(document.getElementById('addProjectModal'));
+    let projectToUpdate = null;
 
-    const searchInput = document.getElementById('search-input');
-    const responsibleFilter = document.getElementById('responsible-filter');
-    const statusFilter = document.getElementById('status-filter');
-    const resetFiltersBtn = document.getElementById('reset-filters-btn');
-    
-    const editSummaryBtn = document.getElementById('edit-summary-btn');
-    const saveSummaryBtn = document.getElementById('save-summary-btn');
-    const cancelSummaryBtn = document.getElementById('cancel-summary-btn');
-    const summaryAccomplishments = document.getElementById('summary-accomplishments');
-    const summaryRisks = document.getElementById('summary-risks');
-    const summaryNextSteps = document.getElementById('summary-next-steps');
-    const summaryTextareas = document.querySelectorAll('.summary-textarea');
+    function getProjectList() { return JSON.parse(localStorage.getItem(PROJECT_LIST_KEY)) || []; }
+    function saveProjectList(projects) { localStorage.setItem(PROJECT_LIST_KEY, JSON.stringify(projects)); }
 
-    let currentSortColumn = null;
-    let isAscending = true;
-
-    function parseDate(dateInput) {
-        if (!dateInput) return null;
-        if (typeof dateInput === 'number' && dateInput > 1) { const excelEpoch = new Date(1899, 11, 30); return new Date(excelEpoch.getTime() + dateInput * 24 * 60 * 60 * 1000); }
-        if (typeof dateInput !== 'string') return null;
-        if (dateInput.includes('.')) { const parts = dateInput.split('.'); if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]); }
-        const date = new Date(dateInput);
-        if (!isNaN(date)) return date;
-        return null;
-    }
-
-    function makeTableSortable() {
-        const table = document.querySelector('table thead');
-        if (!table) return;
-        table.addEventListener('click', (e) => {
-            const header = e.target.closest('th');
-            if (!header || !header.dataset.columnKey) return;
-            const columnKey = header.dataset.columnKey;
-            if (currentSortColumn === columnKey) { isAscending = !isAscending; } 
-            else { currentSortColumn = columnKey; isAscending = true; }
-            applyFilters();
-        });
-    }
-
-    function initialize() {
-        const modalElement = document.getElementById('taskModal');
-        if (modalElement) taskModal = new bootstrap.Modal(modalElement);
-        loadDataAndRender();
-        addEventListeners();
-        makeTableSortable();
-        document.querySelector('.navbar-brand').innerHTML = `<i class="bi bi-clipboard2-data-fill"></i> ${activeProject}`;
-        document.getElementById('project-title').textContent = `${activeProject} - Home`;
-    }
-
-    function loadDataAndRender() {
-        const rawData = localStorage.getItem(PROJECT_DATA_PREFIX + activeProject);
-        if (!rawData) { alert('Error: Could not find data for the selected project.'); return; }
-        projectData = JSON.parse(rawData);
-        homeData = projectData.home || [];
-        populateFilters();
-        populateExecutiveSummary();
-        renderDashboard();
-    }
-
-    function saveProjectData() {
-        projectData.home = homeData;
-        projectData.executiveSummary = {
-            accomplishments: summaryAccomplishments.value,
-            risks: summaryRisks.value,
-            nextSteps: summaryNextSteps.value
-        };
-        projectData.lastModified = new Date().toISOString();
-        localStorage.setItem(PROJECT_DATA_PREFIX + activeProject, JSON.stringify(projectData));
-    }
-
-    function renderDashboard() {
-        populateSummaryCards(homeData);
-        renderStatusChart(homeData);
-        renderCompletionsChart(homeData);
-        applyFilters();
-    }
-
-    function populateExecutiveSummary() {
-        const summary = projectData.executiveSummary || {};
-        summaryAccomplishments.value = summary.accomplishments || '';
-        summaryRisks.value = summary.risks || '';
-        summaryNextSteps.value = summary.nextSteps || '';
-    }
-
-    function toggleSummaryEditMode(isEditing) {
-        editSummaryBtn.classList.toggle('d-none', isEditing);
-        saveSummaryBtn.classList.toggle('d-none', !isEditing);
-        cancelSummaryBtn.classList.toggle('d-none', !isEditing);
-        summaryTextareas.forEach(textarea => {
-            textarea.readOnly = !isEditing;
-            textarea.classList.toggle('editable', isEditing);
-        });
-    }
-
-    function handleSaveSummary() {
-        saveProjectData();
-        toggleSummaryEditMode(false);
-    }
-    
-    function addEventListeners() {
-        editSummaryBtn.addEventListener('click', () => toggleSummaryEditMode(true));
-        cancelSummaryBtn.addEventListener('click', () => { populateExecutiveSummary(); toggleSummaryEditMode(false); });
-        saveSummaryBtn.addEventListener('click', handleSaveSummary);
-        searchInput.addEventListener('input', applyFilters);
-        responsibleFilter.addEventListener('change', applyFilters);
-        statusFilter.addEventListener('change', applyFilters);
-        resetFiltersBtn.addEventListener('click', () => { searchInput.value = ''; responsibleFilter.value = 'All Responsible'; statusFilter.value = 'All Statuses'; applyFilters(); });
-        document.getElementById('add-task-btn')?.addEventListener('click', showModalForAdd);
-        document.getElementById('save-task-btn')?.addEventListener('click', handleFormSave);
-        document.getElementById('export-excel-btn')?.addEventListener('click', handleExportToExcel);
-        document.getElementById('home-table-body')?.addEventListener('click', (e) => {
-            const target = e.target.closest('button');
-            if (!target) return;
-            const index = target.dataset.index;
-            if (target.classList.contains('edit-btn')) showModalForEdit(index);
-            if (target.classList.contains('delete-btn')) handleDelete(index);
-        });
-    }
-
-    function populateFilters() {
-        const responsibles = ['All Responsible', ...new Set(homeData.map(item => item.Responsible).filter(Boolean).sort())];
-        responsibleFilter.innerHTML = responsibles.map(r => `<option value="${r}">${r}</option>`).join('');
-        const statuses = ['All Statuses', ...new Set(homeData.map(item => item.Status).filter(Boolean).sort())];
-        statusFilter.innerHTML = statuses.map(s => `<option value="${s}">${s}</option>`).join('');
-    }
-
-    function applyFilters() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const responsible = responsibleFilter.value;
-        const status = statusFilter.value;
-        let filteredData = homeData.filter(item => {
-            const matchesSearch = (item.Activity || '').toLowerCase().includes(searchTerm);
-            const matchesResponsible = (responsible === 'All Responsible' || item.Responsible === responsible);
-            const matchesStatus = (status === 'All Statuses' || item.Status === status);
-            return matchesSearch && matchesResponsible && matchesStatus;
-        });
-        if (currentSortColumn) {
-            filteredData.sort((a, b) => {
-                let valA = a[currentSortColumn] || '';
-                let valB = b[currentSortColumn] || '';
-                if (currentSortColumn === 'Target Date' || currentSortColumn === 'Update') { valA = parseDate(valA); valB = parseDate(valB); }
-                if (valA < valB) return isAscending ? -1 : 1;
-                if (valA > valB) return isAscending ? 1 : -1;
-                return 0;
-            });
+    function renderProjects() {
+        const projects = getProjectList();
+        projectListContainer.innerHTML = '';
+        if (projects.length === 0) {
+            projectListContainer.innerHTML = `<div class="col-12"><div class="alert alert-info text-center"><h4>No projects found.</h4><p>Click the "Add New Project" button to get started.</p></div></div>`;
+            return;
         }
-        populateTable(filteredData);
-    }
-
-    function populateSummaryCards(data) {
-        document.getElementById('total-tasks').textContent = data.length;
-        const completedTasks = data.filter(item => String(item.Status || '').toLowerCase() === 'completed');
-        document.getElementById('completed-tasks').textContent = completedTasks.length;
-        document.getElementById('inprogress-tasks').textContent = data.filter(item => String(item.Status || '').toLowerCase() === 'in progress').length;
-        document.getElementById('blocked-tasks').textContent = data.filter(item => String(item.Status || '').toLowerCase() === 'on hold').length;
-    }
-
-    function renderCompletionsChart(data) {
-        const ctx = document.getElementById('completions-chart')?.getContext('2d');
-        if (!ctx) return;
-        const completedTasks = data.filter(item => { const status = String(item.Status || '').toLowerCase(); return status === 'completed' && parseDate(item['Update']); });
-        const completionsByWeek = completedTasks.reduce((acc, task) => {
-            const date = parseDate(task['Update']);
-            const year = date.getFullYear();
-            const week = Math.ceil((((date - new Date(year, 0, 1)) / 86400000) + 1) / 7);
-            const weekLabel = `W${week}, ${year}`;
-            acc[weekLabel] = (acc[weekLabel] || 0) + 1;
-            return acc;
-        }, {});
-        const sortedLabels = Object.keys(completionsByWeek).sort((a, b) => { const [weekA, yearA] = a.replace('W', '').split(', '); const [weekB, yearB] = b.replace('W', '').split(', '); if (yearA !== yearB) return yearA - yearB; return weekA - weekB; });
-        const chartData = sortedLabels.map(label => completionsByWeek[label]);
-        const chartConfig = { type: 'bar', data: { labels: sortedLabels, datasets: [{ label: 'Tasks Completed', data: chartData, backgroundColor: 'rgba(25, 135, 84, 0.7)', borderColor: 'rgba(25, 135, 84, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, plugins: { legend: { display: false } } } };
-        if (completionsChartInstance) completionsChartInstance.destroy();
-        completionsChartInstance = new Chart(ctx, chartConfig);
-    }
-
-    function renderStatusChart(data) {
-        const ctx = document.getElementById('status-chart')?.getContext('2d');
-        if (!ctx) return;
-        const statusCounts = data.reduce((acc, item) => { const status = String(item.Status || 'N/A'); acc[status] = (acc[status] || 0) + 1; return acc; }, {});
-        const chartConfig = { type: 'doughnut', data: { labels: Object.keys(statusCounts), datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#28a745', '#007bff', '#ffc107', '#dc3545', '#6c757d', '#17a2b8'], borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } } };
-        if (statusChartInstance) statusChartInstance.destroy();
-        statusChartInstance = new Chart(ctx, chartConfig);
-    }
-
-    function populateTable(data) {
-        const tableBody = document.getElementById('home-table-body');
-        tableBody.innerHTML = '';
-        if (data.length === 0) { tableBody.innerHTML = '<tr><td colspan="10" class="text-center">No tasks match the current filters.</td></tr>'; return; }
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        data.forEach(item => {
-            const originalIndex = homeData.findIndex(originalItem => originalItem === item);
-            let overdueClass = '';
-            const status = String(item.Status || '').toLowerCase();
-            const dueDate = parseDate(item['Target Date']);
-            if (status !== 'completed' && dueDate && dueDate < today) { overdueClass = 'table-danger'; }
-            const row = `<tr class="${overdueClass}"><td>${item.Environment || ''}</td><td>${item.Tag || ''}</td><td>${item.Topics || ''}</td><td>${item.Activity || ''}</td><td>${item.Responsible || ''}</td><td>${item.Support || ''}</td><td>${item['Target Date'] || ''}</td><td>${item.Update || ''}</td><td><span class="badge bg-secondary">${item.Status || 'N/A'}</span></td><td><button class="btn btn-sm btn-outline-primary edit-btn" data-index="${originalIndex}"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-outline-danger delete-btn" data-index="${originalIndex}"><i class="bi bi-trash"></i></button></td></tr>`;
-            tableBody.innerHTML += row;
+        projects.forEach(projectName => {
+            const projectData = JSON.parse(localStorage.getItem(PROJECT_DATA_PREFIX + projectName));
+            const lastModified = projectData ? new Date(projectData.lastModified).toLocaleString('de-DE') : 'N/A';
+            const ragStatus = projectData?.ragStatus || 'G';
+            let statusColorClass = ragStatus === 'A' ? 'rag-amber' : (ragStatus === 'R' ? 'rag-red' : 'rag-green');
+            const card = document.createElement('div');
+            card.className = 'col-md-6 col-lg-4 mb-4';
+            card.innerHTML = `<div class="card h-100 project-card"><div class="card-body d-flex flex-column"><div class="d-flex justify-content-between align-items-start"><h5 class="card-title">${projectName}</h5><span class="rag-status-indicator ${statusColorClass}" title="Project Status: ${statusColorClass.split('-')[1]}"></span></div><p class="card-text text-muted mb-4"><small>Last Modified: ${lastModified}</small></p><button class="btn btn-primary mt-auto select-project-btn" data-project-name="${projectName}"><i class="bi bi-box-arrow-in-right"></i> Open Dashboard</button></div><div class="card-footer d-flex justify-content-between align-items-center"><div class="btn-group"><button class="btn btn-sm btn-rag rag-status-btn ${ragStatus === 'G' ? 'active' : ''}" data-project-name="${projectName}" data-status="G">G</button><button class="btn btn-sm btn-rag rag-status-btn ${ragStatus === 'A' ? 'active' : ''}" data-project-name="${projectName}" data-status="A">A</button><button class="btn btn-sm btn-rag rag-status-btn ${ragStatus === 'R' ? 'active' : ''}" data-project-name="${projectName}" data-status="R">R</button></div><div><button class="btn btn-sm btn-outline-secondary update-project-btn" data-project-name="${projectName}" title="Update from Excel"><i class="bi bi-cloud-arrow-up"></i></button><button class="btn btn-sm btn-outline-danger delete-project-btn" data-project-name="${projectName}" title="Delete Project"><i class="bi bi-trash"></i></button></div></div></div>`;
+            projectListContainer.appendChild(card);
         });
+    }
+
+    function showGlobalStatus(message, isError = false) {
+        globalStatusMessage.innerHTML = `<div class="alert alert-${isError ? 'danger' : 'success'}" role="alert">${message}</div>`;
+        setTimeout(() => { globalStatusMessage.innerHTML = ''; }, 4000);
+    }
+
+    function parseAndStoreProjectData(file, projectName, isNewProject) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const requiredSheets = ['Home', 'Testing', 'Blockers'];
+                    let projectData = {};
+                    if (!isNewProject) {
+                        const existingData = JSON.parse(localStorage.getItem(PROJECT_DATA_PREFIX + projectName));
+                        projectData.ragStatus = existingData?.ragStatus || 'G';
+                    } else {
+                        projectData.ragStatus = 'G';
+                    }
+                    requiredSheets.forEach(sheetName => {
+                        const foundSheet = Object.keys(workbook.Sheets).find(s => s.toLowerCase() === sheetName.toLowerCase());
+                        if (foundSheet) {
+                            const key = sheetName.toLowerCase().replace(/\s+/g, '');
+                            projectData[key] = XLSX.utils.sheet_to_json(workbook.Sheets[foundSheet]);
+                        } else {
+                            throw new Error(`Required sheet "${sheetName}" not found.`);
+                        }
+                    });
+                    projectData.lastModified = new Date().toISOString();
+                    localStorage.setItem(PROJECT_DATA_PREFIX + projectName, JSON.stringify(projectData));
+                    resolve();
+                } catch (error) { reject(error); }
+            };
+            reader.onerror = (error) => reject(error);
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    function handleProjectSave() {
+        const projectNameInput = document.getElementById('project-name');
+        const fileInput = document.getElementById('project-file');
+        const projectName = projectNameInput.value.trim();
+        const file = fileInput.files[0];
+        const statusDiv = document.getElementById('modal-status-message');
+        if (!projectName || !file) { statusDiv.innerHTML = `<div class="alert alert-danger">Please provide a project name and select a file.</div>`; return; }
+        if (getProjectList().includes(projectName)) { statusDiv.innerHTML = `<div class="alert alert-danger">A project with this name already exists.</div>`; return; }
+        statusDiv.innerHTML = `<div class="alert alert-info">Processing file...</div>`;
+        parseAndStoreProjectData(file, projectName, true)
+            .then(() => {
+                const currentProjects = getProjectList();
+                currentProjects.push(projectName);
+                saveProjectList(currentProjects);
+                addProjectForm.reset();
+                statusDiv.innerHTML = '';
+                addProjectModal.hide();
+                renderProjects();
+                showGlobalStatus(`Project "${projectName}" created successfully!`);
+            })
+            .catch(error => { statusDiv.innerHTML = `<div class="alert alert-danger">${error.message}</div>`; });
     }
     
-    function handleExportToExcel() {
-        if (!projectData) { alert("There is no data to export."); return; }
-        const workbook = XLSX.utils.book_new();
-        Object.keys(projectData).forEach(key => {
-            if (key !== 'lastModified' && Array.isArray(projectData[key])) {
-                let sheetName = key.charAt(0).toUpperCase() + key.slice(1);
-                if (key === 'environmentchecklist') sheetName = 'Environment Checklist';
-                XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(projectData[key]), sheetName);
-            }
-        });
-        XLSX.writeFile(workbook, `${activeProject}_Export_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    function handleProjectUpdate(file) {
+        if (!file || !projectToUpdate) return;
+        if (!confirm(`Are you sure you want to replace all data for project "${projectToUpdate}" with the contents of this new file?\n\nThis action cannot be undone.`)) { projectToUpdate = null; return; }
+        parseAndStoreProjectData(file, projectToUpdate, false)
+            .then(() => { renderProjects(); showGlobalStatus(`Project "${projectToUpdate}" was updated successfully!`); })
+            .catch(error => { showGlobalStatus(`Error updating project: ${error.message}`, true); })
+            .finally(() => { projectToUpdate = null; });
     }
 
-    function populateDependenciesDropdown(selectedIndex = -1) {
-        const dependenciesSelect = document.getElementById('modal-dependency');
-        dependenciesSelect.innerHTML = '<option value="">None</option>';
-        homeData.forEach((task, index) => {
-            if (index === selectedIndex) return;
-            const option = document.createElement('option');
-            option.value = task.Activity; // Use Activity name for dependency linking
-            option.textContent = task.Activity || `Task ${index + 1}`;
-            dependenciesSelect.appendChild(option);
-        });
-    }
+    function handleProjectDelete(projectName) { if (confirm(`Are you sure you want to delete the project "${projectName}"? This action cannot be undone.`)) { localStorage.removeItem(PROJECT_DATA_PREFIX + projectName); saveProjectList(getProjectList().filter(p => p !== projectName)); renderProjects(); showGlobalStatus(`Project "${projectName}" was deleted.`); } }
+    function handleProjectSelect(projectName) { sessionStorage.setItem('activeProject', projectName); window.location.href = 'dashboard.html'; }
+    function handleStatusUpdate(projectName, newStatus) { const projectData = JSON.parse(localStorage.getItem(PROJECT_DATA_PREFIX + projectName)); if (projectData) { projectData.ragStatus = newStatus; projectData.lastModified = new Date().toISOString(); localStorage.setItem(PROJECT_DATA_PREFIX + projectName, JSON.stringify(projectData)); renderProjects(); } }
 
-    function showModalForAdd() {
-        document.getElementById('task-form').reset();
-        document.getElementById('modal-task-index').value = '';
-        document.getElementById('taskModalLabel').textContent = 'Add New Task';
-        populateDependenciesDropdown();
-        taskModal.show();
-    }
+    saveProjectBtn.addEventListener('click', handleProjectSave);
+    projectListContainer.addEventListener('click', (e) => { const target = e.target.closest('button'); if (!target) return; const projectName = target.dataset.projectName; if (target.classList.contains('select-project-btn')) { handleProjectSelect(projectName); } else if (target.classList.contains('delete-project-btn')) { handleProjectDelete(projectName); } else if (target.classList.contains('update-project-btn')) { projectToUpdate = projectName; updateFileInput.click(); } else if (target.classList.contains('rag-status-btn')) { const newStatus = target.dataset.status; handleStatusUpdate(projectName, newStatus); } });
+    updateFileInput.addEventListener('change', (e) => { const file = e.target.files[0]; if (file) { handleProjectUpdate(file); } e.target.value = ''; });
 
-    function showModalForEdit(index) {
-        const item = homeData[index];
-        if (!item) return;
-        document.getElementById('task-form').reset();
-        document.getElementById('modal-task-index').value = index;
-        document.getElementById('taskModalLabel').textContent = 'Edit Task';
-        populateDependenciesDropdown(parseInt(index));
-        document.getElementById('modal-environment').value = item.Environment || '';
-        document.getElementById('modal-tag').value = item.Tag || '';
-        document.getElementById('modal-topics').value = item.Topics || '';
-        document.getElementById('modal-activity').value = item.Activity || '';
-        document.getElementById('modal-responsible').value = item.Responsible || '';
-        document.getElementById('modal-support').value = item.Support || '';
-        document.getElementById('modal-target-date').value = item['Target Date'] || '';
-        document.getElementById('modal-status').value = item.Status || '';
-        document.getElementById('modal-dependency').value = item.Dependency || '';
-        taskModal.show();
-    }
-
-    function handleFormSave() {
-        const index = document.getElementById('modal-task-index').value;
-        const taskData = {
-            'Environment': document.getElementById('modal-environment').value,
-            'Tag': document.getElementById('modal-tag').value,
-            'Topics': document.getElementById('modal-topics').value,
-            'Activity': document.getElementById('modal-activity').value,
-            'Responsible': document.getElementById('modal-responsible').value,
-            'Support': document.getElementById('modal-support').value,
-            'Target Date': document.getElementById('modal-target-date').value,
-            'Status': document.getElementById('modal-status').value,
-            'Dependency': document.getElementById('modal-dependency').value
-        };
-        if (index === '') {
-            homeData.push(taskData);
-        } else {
-            homeData[parseInt(index)] = taskData;
-        }
-        saveProjectData();
-        renderDashboard();
-        taskModal.hide();
-    }
-
-    function handleDelete(index) {
-        const item = homeData[index];
-        if (confirm(`Are you sure you want to delete the task "${item.Activity}"?`)) {
-            homeData.splice(index, 1);
-            saveProjectData();
-            renderDashboard();
-        }
-    }
-    
-    initialize();
+    renderProjects();
 });
