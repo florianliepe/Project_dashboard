@@ -27,31 +27,17 @@
     </nav>
     <div class="container mt-5 pt-4">
         <h1 id="project-title">Home</h1>
-        <div class="row" id="summary-cards">
-            <div class="col-lg-3 col-md-6 mb-3"><div class="card"><div class="card-body"><h5 class="card-title">Total Tasks</h5><h4 id="total-tasks">0</h4></div></div></div>
-            <div class="col-lg-3 col-md-6 mb-3"><div class="card"><div class="card-body"><h5 class="card-title">Completed</h5><h4 id="completed-tasks">0</h4></div></div></div>
-            <div class="col-lg-3 col-md-6 mb-3"><div class="card"><div class="card-body"><h5 class="card-title">In Progress</h5><h4 id="inprogress-tasks">0</h4></div></div></div>
-            <div class="col-lg-3 col-md-6 mb-3"><div class="card"><div class="card-body"><h5 class="card-title">On Hold / Blocked</h5><h4 id="blocked-tasks">0</h4></div></div></div>
-        </div>
-        <div class="card mb-4" id="executive-summary-card">
-            <div class="card-header d-flex justify-content-between align-items-center"><span>Executive Summary</span><div id="summary-controls"><button class="btn btn-sm btn-outline-primary" id="edit-summary-btn"><i class="bi bi-pencil"></i> Edit</button><button class="btn btn-sm btn-success d-none" id="save-summary-btn"><i class="bi bi-check-lg"></i> Save</button><button class="btn btn-sm btn-outline-secondary d-none" id="cancel-summary-btn"><i class="bi bi-x-lg"></i> Cancel</button></div></div>
-            <div class="card-body">
-                <div class="mb-3"><label for="summary-accomplishments" class="form-label fw-bold">Key Accomplishments</label><textarea class="form-control summary-textarea" id="summary-accomplishments" rows="3" readonly placeholder="No accomplishments noted..."></textarea></div>
-                <div class="mb-3"><label for="summary-risks" class="form-label fw-bold">Key Risks & Issues</label><textarea class="form-control summary-textarea" id="summary-risks" rows="3" readonly placeholder="No risks noted..."></textarea></div>
-                <div><label for="summary-next-steps" class="form-label fw-bold">Next Steps</label><textarea class="form-control summary-textarea" id="summary-next-steps" rows="3" readonly placeholder="No next steps noted..."></textarea></div>
-            </div>
-        </div>
-        <div class="row mb-4">
-            <div class="col-lg-7"><div class="card h-100"><div class="card-header">Completions Over Time</div><div class="card-body"><canvas id="completions-chart"></canvas></div></div></div>
-            <div class="col-lg-5"><div class="card h-100"><div class="card-header">Status Distribution</div><div class="card-body"><canvas id="status-chart"></canvas></div></div></div>
-        </div>
+        <div class="row" id="summary-cards"><!-- Summary Cards --></div>
+        <div class="card mb-4" id="executive-summary-card"><!-- Executive Summary --></div>
+        <div class="row mb-4"><!-- Charts --></div>
         <div class="card mb-4">
             <div class="card-body">
-                <div class="row g-3 align-items-center">
-                    <div class="col-md-4"><input type="text" id="search-input" class="form-control" placeholder="Search by Activity..."></div>
-                    <div class="col-md-3"><select id="responsible-filter" class="form-select"></select></div>
-                    <div class="col-md-3"><select id="status-filter" class="form-select"></select></div>
-                    <div class="col-md-2"><button id="reset-filters-btn" class="btn btn-outline-secondary w-100">Reset</button></div>
+                <div class="row g-2 align-items-center">
+                    <div class="col-lg-3"><input type="text" id="search-input" class="form-control" placeholder="Search by Activity..."></div>
+                    <div class="col-lg-3"><select id="responsible-filter" class="form-select"></select></div>
+                    <div class="col-lg-3"><select id="support-filter" class="form-select"></select></div>
+                    <div class="col-lg-2"><select id="status-filter" class="form-select"></select></div>
+                    <div class="col-lg-1"><button id="reset-filters-btn" class="btn btn-outline-secondary w-100">Reset</button></div>
                 </div>
             </div>
         </div>
@@ -60,14 +46,23 @@
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover">
-                        <thead><tr><th data-column-key="Environment" style="cursor: pointer;">Environment &#8645;</th><th data-column-key="Tag" style="cursor: pointer;">Tag &#8645;</th><th data-column-key="Topics" style="cursor: pointer;">Topics &#8645;</th><th data-column-key="Activity" style="cursor: pointer;">Activity &#8645;</th><th data-column-key="Responsible" style="cursor: pointer;">Responsible &#8645;</th><th data-column-key="Support" style="cursor: pointer;">Support &#8645;</th><th data-column-key="Target Date" style="cursor: pointer;">Target Date &#8645;</th><th data-column-key="Update" style="cursor: pointer;">Update &#8645;</th><th data-column-key="Status" style="cursor: pointer;">Status &#8645;</th><th>Actions</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">Activity</th>
+                                <th style="width: 15%;" data-column-key="Responsible" style="cursor: pointer;">Responsible &#8645;</th>
+                                <th style="width: 15%;" data-column-key="Support" style="cursor: pointer;">Support &#8645;</th>
+                                <th style="width: 10%;" data-column-key="Date" style="cursor: pointer;">Date &#8645;</th>
+                                <th style="width: 10%;" data-column-key="Status" style="cursor: pointer;">Status &#8645;</th>
+                                <th style="width: 10%;">Actions</th>
+                            </tr>
+                        </thead>
                         <tbody id="home-table-body"></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="taskModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="taskModalLabel">Add/Edit Task</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="task-form"><input type="hidden" id="modal-task-index"><div class="row"><div class="col-md-6 mb-3"><label for="modal-environment" class="form-label">Environment</label><input type="text" class="form-control" id="modal-environment"></div><div class="col-md-6 mb-3"><label for="modal-tag" class="form-label">Tag</label><input type="text" class="form-control" id="modal-tag"></div></div><div class="mb-3"><label for="modal-topics" class="form-label">Topics</label><input type="text" class="form-control" id="modal-topics"></div><div class="mb-3"><label for="modal-activity" class="form-label">Activity</label><input type="text" class="form-control" id="modal-activity" required></div><div class="row"><div class="col-md-6 mb-3"><label for="modal-responsible" class="form-label">Responsible</label><input type="text" class="form-control" id="modal-responsible"></div><div class="col-md-6 mb-3"><label for="modal-support" class="form-label">Support</label><input type="text" class="form-control" id="modal-support"></div></div><div class="row"><div class="col-md-6 mb-3"><label for="modal-target-date" class="form-label">Target Date</label><input type="text" class="form-control" id="modal-target-date" placeholder="DD.MM.YYYY"></div><div class="col-md-6 mb-3"><label for="modal-status" class="form-label">Status</label><input type="text" class="form-control" id="modal-status"></div></div><div class="mb-3"><label for="modal-dependency" class="form-label">Dependency</label><select id="modal-dependency" class="form-select"></select><div class="form-text">Select a task that must be completed before this one can start.</div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="button" class="btn btn-primary" id="save-task-btn">Save changes</button></div></div></div></div>
+    <div class="modal fade" id="taskModal" tabindex="-1"><!-- Modal --></div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
